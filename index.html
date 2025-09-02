@@ -1,149 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Westpine.games</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westpine.games – Fun School Games</title>
+  <meta name="description" content="Why did i make this!">
+  <meta name="keywords" content="Westpine, games, school, adventure, murder mystery, fun, Noah">
+  <meta name="author" content="Noah O">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Comic Neue', sans-serif;
-      background-color: #fefefe;
-      color: #222;
-      transition: background-color 0.3s, color 0.3s;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    a { text-decoration: none; }
-
-    /* Navbar */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      position: sticky;
-      top: 0;
-      background-color: #ffffffcc;
-      backdrop-filter: blur(6px);
-      z-index: 100;
-    }
-    nav a {
-      margin-left: 1.5rem;
-      font-weight: bold;
-      font-size: 1rem;
-      transition: color 0.2s;
-    }
-    nav a:hover { color: #4b79a1; }
-    .dark-mode-toggle {
-      cursor: pointer;
-      padding: 0.3rem 0.6rem;
-      border: 1px solid #222;
-      border-radius: 5px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-    }
-
-    /* Hero */
-    .hero {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff;
       text-align: center;
-      padding: 4rem 2rem;
-      background: linear-gradient(135deg, #f7a1a1, #fcd34d);
     }
-    .hero h1 {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+
+    header {
+      padding: 40px 20px 10px;
     }
-    .hero p {
-      font-size: 1.3rem;
-      max-width: 600px;
+
+    header h1 {
+      font-size: 48px;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 16px;
+      color: #666;
+      margin: 8px 0 20px;
+    }
+
+    .random-btn {
+      background: #222;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 40px;
+      transition: background 0.2s;
+    }
+    .random-btn:hover { background: #444; }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+
+    .game-tile {
+      background: #f2f2f2;
+      border-radius: 12px;
+      padding: 40px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #222;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .game-tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+
+    footer {
+      background: #fafafa;
+      padding: 40px 20px;
+      border-top: 1px solid #ddd;
+      text-align: center;
+    }
+
+    .footer-sections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      max-width: 1100px;
       margin: 0 auto;
     }
 
-    /* Game buttons */
-    .games-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding: 3rem 1rem;
-      flex-grow: 1;
-    }
-    .game-button {
-      padding: 1rem 2rem;
-      font-size: 1.3rem;
-      font-weight: bold;
-      border: 2px solid #4b79a1;
+    .tile {
+      background: white;
+      border: 1px solid #ddd;
       border-radius: 12px;
-      background-color: #ffffff;
-      color: #222;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
       cursor: pointer;
-      width: 250px;
-      text-align: center;
-      transition: transform 0.2s, background-color 0.2s;
-    }
-    .game-button:hover {
-      background-color: #4b79a1;
-      color: white;
-      transform: translateY(-3px);
     }
 
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      background-color: #4b79a1;
-      color: white;
+    .tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
-
-    /* Dark mode */
-    body.dark {
-      background-color: #111;
-      color: #eee;
-    }
-    body.dark header { background-color: #111ccccc; }
-    body.dark .hero { background: linear-gradient(135deg, #333, #555); color: #fff; }
-    body.dark .game-button { background-color: #222; color: #eee; border-color: #eee; }
-    body.dark .game-button:hover { background-color: #eee; color: #222; }
-    body.dark footer { background-color: #111; }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo"><strong>Westpine.games</strong></div>
-    <nav>
-      <a href="#">Home</a>
-      <a href="changelog.html">Changelog</a>
-      <a href="feedback.html">Feedback</a>
-      <span class="dark-mode-toggle">🌙</span>
-    </nav>
+    <h1>Westpine.games</h1>
+    <p>Fun school games created by Noah</p>
+    <button class="random-btn" onclick="randomGame()">🎲 Random Game</button>
   </header>
 
-  <section class="hero">
-    <h1>Westpine.games</h1>
-    <p>Play all your Westpine games in one fun, safe place! Click a game to start playing.</p>
-  </section>
-
-  <section class="games-buttons">
-    <a href="murder.html" class="game-button">Westpine Murder Mystery</a>
-    <a href="westpine.html" class="game-button">Westpine Night</a>
-    <a href="science-lab.html" class="game-button">Westpine Science Lab</a>
-    <a href="art-studio.html" class="game-button">Westpine Art Studio</a>
-    <!-- Add more game buttons here -->
-  </section>
+  <main class="game-grid">
+    <div class="game-tile" onclick="goTo('games/murder-mystery.html')">🕵️ Murder Mystery</div>
+    <div class="game-tile" onclick="goTo('games/school-adventure.html')">🏫 School Adventure</div>
+    <div class="game-tile" onclick="goTo('games/science-lab.html')">🔬 Science Lab</div>
+    <div class="game-tile" onclick="goTo('games/art-studio.html')">🎨 Art Studio</div>
+    <!-- Add more tiles as needed -->
+  </main>
 
   <footer>
-    &copy; 2025 Westpine.games | Made by Noah
+    <div class="footer-sections">
+      <div class="tile" onclick="goTo('changelog.html')">
+        <h2>Changelog</h2>
+        <p>See what's new and updated.</p>
+      </div>
+      <div class="tile" onclick="goTo('feedback.html')">
+        <h2>Feedback</h2>
+        <p>Share your thoughts and suggestions.</p>
+      </div>
+    </div>
+    <p>© 2025 Westpine.games — Made by Noah</p>
   </footer>
 
   <script>
-    const toggle = document.querySelector('.dark-mode-toggle');
-    toggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark');
-      toggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-    });
+    function goTo(page) {
+      window.location.href = page;
+    }
+
+    function randomGame() {
+      const games = [
+        'games/murder-mystery.html',
+        'games/school-adventure.html',
+        'games/science-lab.html',
+        'games/art-studio.html'
+      ];
+      const pick = games[Math.floor(Math.random() * games.length)];
+      window.location.href = pick;
+    }
   </script>
 </body>
 </html>
+
