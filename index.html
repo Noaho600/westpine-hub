@@ -6,63 +6,98 @@
   <title>Westpine.games</title>
   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Basic Reset */
+    /* Reset & basic styles */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Comic Neue', sans-serif;
-      background-color: #f0f0f0;
+      background-color: #fefefe;
       color: #222;
       transition: background-color 0.3s, color 0.3s;
     }
     a { text-decoration: none; color: inherit; }
+    
+    /* Navbar */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 1rem 2rem;
-      background-color: #4b79a1;
-      color: white;
+      position: sticky;
+      top: 0;
+      background-color: #ffffffcc;
+      backdrop-filter: blur(6px);
+      z-index: 100;
     }
     nav a {
       margin-left: 1.5rem;
       font-weight: bold;
+      font-size: 1rem;
+      transition: color 0.2s;
     }
-    nav a:hover { text-decoration: underline; }
+    nav a:hover { color: #4b79a1; }
+    .dark-mode-toggle {
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid #222;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
+
+    /* Hero section */
     .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
       text-align: center;
-      padding: 3rem 1rem;
-      background-color: #6c92c5;
-      color: white;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f7a1a1, #fcd34d);
+      color: #222;
     }
-    .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+    .hero h1 {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      max-width: 600px;
+    }
+
+    /* Game grid */
     .games-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1.5rem;
-      padding: 2rem;
+      padding: 3rem 2rem;
       max-width: 1200px;
       margin: 0 auto;
     }
     .game-card {
-      background-color: white;
-      border-radius: 12px;
+      background: #ffffff;
+      border-radius: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       overflow: hidden;
+      cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .game-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transform: translateY(-6px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
     }
     .game-card img {
       width: 100%;
-      height: 150px;
+      height: 160px;
       object-fit: cover;
     }
     .game-card h3 {
       padding: 1rem;
       font-size: 1.2rem;
+      text-align: center;
     }
+
+    /* Footer */
     footer {
       text-align: center;
       padding: 1.5rem;
@@ -70,23 +105,16 @@
       color: white;
       margin-top: 2rem;
     }
+
     /* Dark mode */
     body.dark {
-      background-color: #222;
+      background-color: #111;
       color: #eee;
     }
-    body.dark .hero { background-color: #333; }
-    body.dark header { background-color: #111; }
+    body.dark header { background-color: #111ccccc; }
+    body.dark .hero { background: linear-gradient(135deg, #333, #555); color: #fff; }
+    body.dark .game-card { background: #222; color: #eee; }
     body.dark footer { background-color: #111; }
-    body.dark .game-card { background-color: #333; color: #eee; }
-    .dark-mode-toggle {
-      cursor: pointer;
-      padding: 0.3rem 0.6rem;
-      border: 1px solid white;
-      border-radius: 5px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-    }
   </style>
 </head>
 <body>
@@ -95,31 +123,34 @@
     <nav>
       <a href="#">Home</a>
       <a href="#">Games</a>
-      <a href="#">About</a>
-      <a href="#">Contact</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="feedback.html">Feedback</a>
       <span class="dark-mode-toggle">🌙</span>
     </nav>
   </header>
 
   <section class="hero">
-    <h1>Welcome to Westpine.games</h1>
-    <p>Play all your favorite Westpine games in one place!</p>
+    <h1>Westpine.games</h1>
+    <p>Play all your Westpine games in one fun, safe place! From school adventures to mysteries, there’s a game for everyone.</p>
   </section>
 
   <section class="games-grid">
     <div class="game-card">
-      <img src="https://via.placeholder.com/400x150?text=Game+1" alt="Game 1">
+      <img src="https://via.placeholder.com/400x160?text=Game+1" alt="Game 1">
       <h3>Westpine Murder Mystery</h3>
     </div>
     <div class="game-card">
-      <img src="https://via.placeholder.com/400x150?text=Game+2" alt="Game 2">
-      <h3>Westpine Night - Escape</h3>
+      <img src="https://via.placeholder.com/400x160?text=Game+2" alt="Game 2">
+      <h3>Westpine Night</h3>
     </div>
     <div class="game-card">
-      <img src="https://via.placeholder.com/400x150?text=Game+3" alt="Game 3">
+      <img src="https://via.placeholder.com/400x160?text=Game+3" alt="Game 3">
       <h3>Westpine Science Lab</h3>
     </div>
-    <!-- Add more game cards here -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/400x160?text=Game+4" alt="Game 4">
+      <h3>Westpine Art Studio</h3>
+    </div>
   </section>
 
   <footer>
