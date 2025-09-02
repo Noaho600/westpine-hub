@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎨 Westpine Art Studio</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #fefefe;
+    }
+
+    header {
+      padding: 20px;
+      background: linear-gradient(90deg, #f7a1a1, #fcd34d);
+      color: #222;
+    }
+
+    header h1 { margin: 0; font-size: 36px; }
+    header p { margin: 5px 0 0; font-size: 16px; }
+
+    #toolbar {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #toolbar button, #toolbar input[type=color] {
+      padding: 10px 15px;
+      font-size: 14px;
+      border: 1px solid #222;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #fff;
+      transition: background 0.2s;
+    }
+    #toolbar button:hover { background-color: #eee; }
+
+    canvas {
+      border: 2px solid #222;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      touch-action: none; /* for touch devices */
+    }
+
+    footer {
+      padding: 20px;
+      border-top: 1px solid #ddd;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎨 Westpine Art Studio</h1>
+    <p>Create your masterpiece!</p>
+  </header>
+
+  <div id="toolbar">
+    <button onclick="setTool('brush')">Brush</button>
+    <button onclick="setTool('eraser')">Eraser</button>
+    <input type="color" id="colorPicker" value="#000000" onchange="setColor(this.value)">
+    <button onclick="clearCanvas()">Clear</button>
+    <button onclick="saveImage()">Save</button>
+  </div>
+
+  <canvas id="canvas" width="800" height="500"></canvas>
+
+  <footer>
+    <a href="index.html">⬅ Back to Westpine.games</a>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let painting = false;
+    let tool = 'brush';
+    let brushColor = '#000000';
+    let brushSize = 4;
+
+    function setTool(selected) {
+      tool = selected;
+    }
+
+    function setColor(color) {
+      brushColor = color;
+    }
+
+    function clearCanvas() {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = 'my-art.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function startPosition(e) {
+      painting = true;
+      draw(e);
+    }
+
+    function endPosition() {
+      painting = false;
+      ctx.beginPath();
+    }
+
+    function getCursorPosition(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left || e.touches[0].clientX - rect.left,
+        y: e.clientY - rect.top || e.touches[0].clientY - rect.top
+      };
+    }
+
+    function draw(e) {
+      if (!painting) return;
+      const pos = getCursorPosition(e);
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = (tool === 'eraser') ? '#fff' : brushColor;
+
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    // Event listeners
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    // Initialize canvas with white background
+    clearCanvas();
+  </script>
+
+</body>
+</html>
