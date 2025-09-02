@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💧 Water Cycle - Westpine Science Lab</title>
+<style>
+  body { margin:0; font-family: Arial, sans-serif; text-align: center; background: #cce7ff; }
+  header { padding: 20px; background: #6cc5d7; color: #222; }
+  header h1 { margin:0; font-size:32px; }
+  header p { margin:5px 0 0; font-size:16px; }
+  #lab { position: relative; width: 90%; max-width: 800px; margin: 30px auto; height: 500px; border: 2px solid #222; border-radius: 12px; background: linear-gradient(to top, #5ab3f0, #cce7ff 60%); overflow: hidden; }
+  .sun { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; background: yellow; border-radius: 50%; cursor:pointer; animation: rotate 20s linear infinite; }
+  @keyframes rotate { 0% { transform: translateX(-50%) rotate(0deg); } 100% { transform: translateX(-50%) rotate(360deg); } }
+  .cloud { position: absolute; width: 120px; height: 60px; background: #fff; border-radius: 60px; top: 80px; left: 50%; transform: translateX(-50%); cursor:pointer; }
+  .water { position: absolute; bottom:0; width:100%; height:100px; background: #2196f3; }
+  .raindrop { position: absolute; width: 8px; height: 12px; background: #0af; border-radius: 50%; animation: fall 2s linear infinite; display:none; }
+  @keyframes fall { 0% { top:100px; } 100% { top:420px; } }
+  .label { position:absolute; font-size:14px; font-weight:bold; color:#222; background:rgba(255,255,255,0.7); padding:2px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>💧 Water Cycle</h1>
+<p>Click the sun to evaporate water, click the cloud to make it rain!</p>
+</header>
+
+<div id="lab">
+  <div class="sun" onclick="evaporate()"></div>
+  <div class="cloud" onclick="rain()"></div>
+  <div class="water"></div>
+
+  <div class="label" style="left:10px; bottom:110px;">Collection</div>
+  <div class="label" style="left:50%; top:50px;">Condensation (Cloud)</div>
+  <div class="label" style="left:50%; bottom:450px;">Evaporation (Sun)</div>
+</div>
+
+<script>
+const raindrops = [];
+for(let i=0;i<20;i++){
+  const drop = document.createElement('div');
+  drop.className = 'raindrop';
+  drop.style.left = (Math.random()*760)+'px';
+  document.getElementById('lab').appendChild(drop);
+  raindrops.push(drop);
+}
+
+function evaporate(){
+  alert("Evaporation: Water turns into vapor and rises into the sky!");
+}
+
+function rain(){
+  alert("Precipitation: Clouds release water as rain!");
+  raindrops.forEach(drop => {
+    drop.style.display = 'block';
+    setTimeout(()=>{drop.style.display='none';},2000);
+  });
+}
+</script>
+
+<footer>
+  <a href="science-lab.html">⬅ Back to Science Lab</a>
+</footer>
+
+</body>
+</html>
