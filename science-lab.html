@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔬 Westpine Science Lab</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fefefe;
+      text-align: center;
+    }
+
+    header {
+      padding: 40px 20px 20px;
+      background: linear-gradient(90deg, #6cc5d7, #9ee7ff);
+      color: #222;
+    }
+    header h1 { margin: 0; font-size: 36px; }
+    header p { margin: 10px 0 0; font-size: 16px; }
+
+    .categories {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      padding: 30px 10px 10px;
+    }
+    .category {
+      background: #f2f2f2;
+      border-radius: 12px;
+      padding: 20px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .category:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .experiments {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 30px auto 60px;
+      padding: 0 20px;
+    }
+
+    .experiment-tile {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 30px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .experiment-tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+
+    footer {
+      background: #6cc5d7;
+      color: #222;
+      padding: 30px 20px;
+      font-size: 14px;
+      border-top: 1px solid #ddd;
+    }
+
+    a { text-decoration: none; color: inherit; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔬 Westpine Science Lab</h1>
+    <p>Explore classes and interactive experiments!</p>
+  </header>
+
+  <!-- Categories -->
+  <div class="categories">
+    <div class="category" onclick="filterClass('standard')">Standard Science</div>
+    <div class="category" onclick="filterClass('gears1')">Gears 1</div>
+    <div class="category" onclick="filterClass('gears2')">Gears 2</div>
+    <div class="category" onclick="filterClass('biology')">Biology</div>
+  </div>
+
+  <!-- Experiments -->
+  <div class="experiments" id="experimentGrid">
+    <!-- Standard Science -->
+    <div class="experiment-tile" data-class="standard" onclick="goTo('experiments/volcano.html')">🌋 Erupting Volcano</div>
+    <div class="experiment-tile" data-class="standard" onclick="goTo('experiments/water-cycle.html')">💧 Water Cycle</div>
+    <div class="experiment-tile" data-class="standard" onclick="goTo('experiments/water-cycle.html')">Earth Simulator</div>
+
+    <!-- Gears 1 -->
+    <div class="experiment-tile" data-class="gears1" onclick="goTo('experiments/gear-machine.html')">⚙️ Gear Machine 1</div>
+    <div class="experiment-tile" data-class="gears1" onclick="goTo('experiments/lever.html')">🔧 Lever Physics</div>
+
+    <!-- Gears 2 -->
+    <div class="experiment-tile" data-class="gears2" onclick="goTo('experiments/motor-gear.html')">🛠 Motorized Gear</div>
+    <div class="experiment-tile" data-class="gears2" onclick="goTo('experiments/pulley.html')">🪢 Pulley System</div>
+
+    <!-- Biology -->
+    <div class="experiment-tile" data-class="biology" onclick="goTo('experiments/cell-model.html')">🧬 Cell Model</div>
+    <div class="experiment-tile" data-class="biology" onclick="goTo('experiments/dna.html')">🧪 DNA Extraction</div>
+  </div>
+
+  <footer>
+    <a href="index.html">⬅ Back to Westpine.games</a>
+  </footer>
+
+  <script>
+    function goTo(page) {
+      window.location.href = page;
+    }
+
+    function filterClass(className) {
+      const experiments = document.querySelectorAll('.experiment-tile');
+      experiments.forEach(exp => {
+        if (className === 'all' || exp.dataset.class === className) {
+          exp.style.display = 'block';
+        } else {
+          exp.style.display = 'none';
+        }
+      });
+    }
+
+    // Show all by default
+    filterClass('all');
+  </script>
+</body>
+</html>
