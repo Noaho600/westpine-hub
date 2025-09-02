@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏃 Run in the halls - Westpine Games</title>
+<style>
+  body { margin: 0; font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; }
+  header { padding: 20px; background: #f7d67a; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:5px 0 0; font-size:14px; }
+  canvas { background: #fff; display:block; margin: 20px auto; border:2px solid #222; border-radius:8px; }
+  footer { padding: 20px; font-size:14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏃 Hallway Runner</h1>
+  <p>Avoid obstacles and collect stars! Use arrow keys to move.</p>
+</header>
+
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<footer>
+  <a href="index.html">⬅ Back to Westpine.games</a>
+</footer>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let player = { x: 180, y: 500, width: 40, height: 40, color: '#4b79a1' };
+let obstacles = [];
+let collectibles = [];
+let keys = {};
+let score = 0;
+let speed = 2;
+let gameOver = false;
+
+// Controls
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+// Game Loop
+function gameLoop() {
+  if(gameOver) {
+    ctx.fillStyle = '#222';
+    ctx.font = '28px Arial';
+    ctx.fillText('Game Over!', 120, 300);
+    ctx.font = '20px Arial';
+    ctx.fillText('Score: ' + score, 150, 340);
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Move player
+  if(keys['ArrowLeft'] && player.x > 0) player.x -= 5;
+  if(keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += 5;
+
+  // Draw player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  // Spawn obstacles
+  if(Math.random() < 0.02) {
+    obstacles.push({ x: Math.random() * 360, y: -40, width: 40, height: 40, color:'#d9534f' });
+  }
+
+  // Spawn collectibles
+  if(Math.random() < 0.01) {
+    collectibles.push({ x: Math.random() * 360, y: -30, width: 20, height: 20, color:'#ffeb3b' });
+  }
+
+  // Move obstacles
+  obstacles.forEach((obs, index) => {
+    obs.y += speed;
+    ctx.fillStyle = obs.color;
+    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+    // Collision detection
+    if(player.x < obs.x + obs.width &&
+       player.x + player.width > obs.x &&
+       player.y < obs.y + obs.height &&
+       player.y + player.height > obs.y) {
+         gameOver = true;
+       }
+
+    // Remove off-screen
+    if(obs.y > canvas.height) obstacles.splice(index,1);
+  });
+
+  // Move collectibles
+  collectibles.forEach((col, index) => {
+    col.y += speed;
+    ctx.fillStyle = col.color;
+    ctx.fillRect(col.x, col.y, col.width, col.height);
+
+    // Collect
+    if(player.x < col.x + col.width &&
+       player.x + player.width > col.x &&
+       player.y < col.y + col.height &&
+       player.y + player.height > col.y) {
+         score += 1;
+         collectibles.splice(index,1);
+       }
+
+    // Remove off-screen
+    if(col.y > canvas.height) collectibles.splice(index,1);
+  });
+
+  // Display score
+  ctx.fillStyle = '#222';
+  ctx.font = '18px Arial';
+  ctx.fillText('Score: ' + score, 10, 20);
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
