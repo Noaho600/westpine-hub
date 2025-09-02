@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Westpine.games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Basic Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Comic Neue', sans-serif;
+      background-color: #f0f0f0;
+      color: #222;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    a { text-decoration: none; color: inherit; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #4b79a1;
+      color: white;
+    }
+    nav a {
+      margin-left: 1.5rem;
+      font-weight: bold;
+    }
+    nav a:hover { text-decoration: underline; }
+    .hero {
+      text-align: center;
+      padding: 3rem 1rem;
+      background-color: #6c92c5;
+      color: white;
+    }
+    .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .game-card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .game-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+    .game-card h3 {
+      padding: 1rem;
+      font-size: 1.2rem;
+    }
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background-color: #4b79a1;
+      color: white;
+      margin-top: 2rem;
+    }
+    /* Dark mode */
+    body.dark {
+      background-color: #222;
+      color: #eee;
+    }
+    body.dark .hero { background-color: #333; }
+    body.dark header { background-color: #111; }
+    body.dark footer { background-color: #111; }
+    body.dark .game-card { background-color: #333; color: #eee; }
+    .dark-mode-toggle {
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid white;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><strong>Westpine.games</strong></div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Games</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+      <span class="dark-mode-toggle">🌙</span>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Welcome to Westpine.games</h1>
+    <p>Play all your favorite Westpine games in one place!</p>
+  </section>
+
+  <section class="games-grid">
+    <div class="game-card">
+      <img src="https://via.placeholder.com/400x150?text=Game+1" alt="Game 1">
+      <h3>Westpine Murder Mystery</h3>
+    </div>
+    <div class="game-card">
+      <img src="https://via.placeholder.com/400x150?text=Game+2" alt="Game 2">
+      <h3>Westpine Night - Escape</h3>
+    </div>
+    <div class="game-card">
+      <img src="https://via.placeholder.com/400x150?text=Game+3" alt="Game 3">
+      <h3>Westpine Science Lab</h3>
+    </div>
+    <!-- Add more game cards here -->
+  </section>
+
+  <footer>
+    &copy; 2025 Westpine.games | Made by Noah
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.dark-mode-toggle');
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      toggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>
