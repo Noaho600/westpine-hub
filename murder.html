@@ -1,0 +1,634 @@
+import React, { useMemo, useState, useEffect } from "react";
+
+// --- Westpine Murder Mystery (single-file React) ---
+// Features:
+// - Randomized killer each round (student/teacher/admin)
+// - Explore rooms, talk, form alliances (max 2 allies)
+// - Simulated murders while you explore (safer in groups)
+// - Emergency meetings -> accusations -> voting -> elimination
+// - Win by voting out the killer; lose if you die or too many innocents die
+// - Clean Tailwind UI. No external libs required.
+//
+// How to use in ChatGPT Canvas: Click "Run". Otherwise, paste this into a Vite-React app as App.jsx.
+
+const STUDENTS = [
+  "Noah O",
+  "William Harvey",
+  "Christopher Hyser",
+  "Zia K",
+  "Charles D",
+  "Gerald D",
+  "Alexander D",
+  "Adrianna Dorisma",
+  "Adrianna G",
+  "Kairo S",
+  "Sophia L",
+  "Laura C",
+  "Arianna M",
+  "Dominic M",
+  "Aaliyah B",
+  "Ryan A",
+  "Kylan H",
+  "Melody",
+  "Malaya",
+  "Roman M",
+  "Saamiyah R",
+  "Cedric S",
+  "Aashif K",
+  "Niala A",
+  "Tiffany C",
+  "Joshua W",
+  "Zariyah W",
+  "Joshua Newell",
+  "Bless Bentley",
+];
+
+const TEACHERS = [
+  "Mrs. Barnes",
+  "Ms. Brown",
+  "Mr. Duris",
+  "Mrs. Francis",
+  "Mrs. Luly",
+  "Mr. Mathews",
+  "Mr. Munoz",
+  "Mrs. Reid",
+  "Ms. Banton",
+  "Mrs. Seymour",
+  "Mrs. Sampson",
+  "Mr. Valin",
+  "Ms. Rosen",
+];
+
+const ADMINS = [
+  "Mr. Johnson",
+  "Ms. Balog",
+  "Dr. Duffus",
+  "Mrs. Showers",
+];
+
+const ROOMS = [
+  "Art",
+  "Cafeteria",
+  "Hall A",
+  "Hall B",
+  "Gym",
+  "Lab",
+  "Library",
+  "Civics",
+  "Math",
+  "ELA",
+  "Global Perspectives",
+  "Office",
+  "Courtyard",
+  "Science",
+  "Stairs",
+  "Bathroom",
+];
+
+// Simple adjacency map for movement logic
+const ADJ = {
+  Art: ["Science", "Hall B"]
+  Cafeteria: ["Hall A", "Courtyard"],
+  "Hall A": ["Cafeteria", "Math", "ELA", "Stairs", "Hall B"],
+  "Hall B": ["Library", "Gym", "Stairs", "Hall A"],
+  Gym: ["Hall B", "Bathroom"],
+  Lab: ["Courtyard", "Hall A", "Cafeteria"]
+  Library: ["Hall B", "Civics"],
+  Civics: ["Library", "Global Perspectives"],
+  Math: ["Hall A", "Office"],
+  ELA: ["Hall A"],
+  Science: ["Hall A", "Hall B", "Art"]
+  "Global Perspectives": ["Civics", "Library"],
+  Office: ["Math", "Courtyard"],
+  Courtyard: ["Office", "Cafeteria"],
+  Stairs: ["Hall A", "Hall B", "Bathroom"],
+  Bathroom: ["Stairs", "Gym"],
+};
+
+function randItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ return [...arr].sort(() => Math.random()-0.5); }
+
+function makeNPC(name, role){
+  return {
+    id: name,
+    name,
+    role, // "Student" | "Teacher" | "Admin"
+    alive: true,
+    location: randItem(ROOMS),
+    lastSeen: null, // {room, tick}
+    suspicion: 0,
+    alliedWithPlayer: false,
+    trust: Math.random()*0.5 + 0.25, // 0.25 to 0.75
+    boldness: Math.random(), // how likely to accuse
+    honesty: Math.random()*0.5 + 0.25, // 0.25 to 0.75
+    memory: [], // short timeline of sightings
+    isKiller: false,
+  };
+}
+
+function initializeCast(){
+  const cast = [];
+  STUDENTS.forEach(n => cast.push(makeNPC(n, "Student")));
+  TEACHERS.forEach(n => cast.push(makeNPC(n, "Teacher")));
+  ADMINS.forEach(n => cast.push(makeNPC(n, "Admin")));
+  // Random killer
+  const killerIndex = Math.floor(Math.random()*cast.length);
+  cast[killerIndex].isKiller = true;
+  return cast;
+}
+
+function labelForRole(role){
+  if(role === "Student") return "bg-blue-100 text-blue-900";
+  if(role === "Teacher") return "bg-emerald-100 text-emerald-900";
+  return "bg-amber-100 text-amber-900"; // Admin
+}
+
+function RoomBadge({room}){
+  return <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 border border-slate-200">{room}</span>;
+}
+
+function Pill({children}){
+  return <span className="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-white">{children}</span>;
+}
+
+function Section({title, children}){
+  return (
+    <div className="bg-white/70 backdrop-blur rounded-2xl shadow p-4 border border-slate-200">
+      <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+const START_TIPS = [
+  "Form alliances to reduce your risk of being targeted.",
+  "If you find a body, call a meeting from the top bar.",
+  "During meetings, pay attention to who was near the scene.",
+  "Killer is randomized each game—trust no one.",
+];
+
+export default function App(){
+  const [tick, setTick] = useState(0);
+  const [cast, setCast] = useState(() => initializeCast());
+  const [playerRoom, setPlayerRoom] = useState(randItem(ROOMS));
+  const [phase, setPhase] = useState("explore"); // explore | meeting | over
+  const [log, setLog] = useState(["A scream echoes through Westpine. A student is dead."]);
+  const [foundBodies, setFoundBodies] = useState([]); // {victimId, room, tick}
+  const [accusations, setAccusations] = useState([]); // {from, against, weight, reason}
+  const [meetingReason, setMeetingReason] = useState("Initial Briefing");
+  const [aliveIDs, setAliveIDs] = useState(() => new Set(initializeCast().map(x => x.id))); // dummy; replaced on first effect
+  const [allies, setAllies] = useState([]); // array of ids
+  const [selectedVote, setSelectedVote] = useState(null);
+  const [outcome, setOutcome] = useState(null); // win/lose reason
+
+  // Keep a stable set of alive IDs for quick checks
+  useEffect(() => {
+    setAliveIDs(new Set(cast.filter(x => x.alive).map(x=>x.id)));
+  }, [cast]);
+
+  // Helper to append to the event log
+  const pushLog = (msg) => setLog(prev => [msg, ...prev].slice(0, 200));
+
+  const aliveCast = useMemo(() => cast.filter(x => x.alive), [cast]);
+  const killer = useMemo(() => cast.find(x => x.isKiller), [cast]);
+
+  // --- Movement simulation for NPCs on each tick ---
+  function stepNPCs(nextTick){
+    setCast(prev => prev.map(npc => {
+      if(!npc.alive) return npc;
+      // Allies try to move toward player's room
+      let nextRoom;
+      const neighbors = ADJ[npc.location] || [];
+      if(npc.alliedWithPlayer){
+        // 70% chance to move toward player if adjacent path exists
+        const toward = neighbors.includes(playerRoom) ? playerRoom : randItem(neighbors);
+        nextRoom = Math.random() < 0.7 && toward ? toward : (neighbors[0] || npc.location);
+      } else {
+        nextRoom = neighbors.length ? randItem(neighbors) : npc.location;
+      }
+      return {
+        ...npc,
+        location: nextRoom || npc.location,
+        lastSeen: { room: npc.location, tick: nextTick-1 },
+        memory: [...npc.memory.slice(-4), {room: npc.location, tick: nextTick-1}],
+      };
+    }));
+  }
+
+  // --- Killer behavior: may kill if sharing a room with a target ---
+  function killerAttempt(nextTick){
+    setCast(prev => {
+      const killerIdx = prev.findIndex(p => p.isKiller);
+      const killer = prev[killerIdx];
+      if(!killer || !killer.alive) return prev;
+      const room = killer.location;
+      const potential = prev.filter(p => p.alive && !p.isKiller && p.id !== "You" && p.location === room);
+
+      if(potential.length === 0) return prev;
+
+      // If the player is in the same room with >=1 ally, strongly reduce kill chance
+      const playerHere = room === playerRoom;
+      const alliesHere = prev.filter(p => allies.includes(p.id) && p.location === room && p.alive).length;
+
+      // Base kill chance
+      let chance = 0.55;
+      if(playerHere && alliesHere >= 1) chance -= 0.35; // witnesses deter
+      if(playerHere && alliesHere >= 2) chance -= 0.15; // even safer in trio
+      chance = Math.max(0.05, chance);
+
+      if(Math.random() < chance){
+        const victim = randItem(potential);
+        const updated = prev.map(p => p.id === victim.id ? { ...p, alive: false } : p);
+        // leave body record
+        const body = { victimId: victim.id, room, tick: nextTick };
+        setFoundBodies(b => [body, ...b]);
+        // increase suspicion of those last seen near room
+        const nearWitnesses = updated.filter(p => p.alive && p.lastSeen && ADJ[p.lastSeen.room]?.includes(room));
+        const accuseeOptions = updated.filter(p => p.alive && p.id !== victim.id);
+        const randomBlame = accuseeOptions.length ? randItem(accuseeOptions).id : null;
+        const newAcc = nearWitnesses.map(w => ({
+          from: w.id,
+          against: randomBlame,
+          weight: 0.5 + Math.random()*0.5,
+          reason: `${w.name} remembers someone near ${room}.`,
+        }));
+        setAccusations(prevA => [...newAcc, ...prevA].slice(0, 50));
+        pushLog(`A body was discovered in ${room}: ${victim.name}.`);
+        return updated;
+      }
+      return prev;
+    });
+  }
+
+  // --- Player actions ---
+  function movePlayer(to){
+    if(phase !== "explore") return;
+    if(!ADJ[playerRoom]?.includes(to)) return;
+    setPlayerRoom(to);
+    const nextTick = tick + 1;
+    setTick(nextTick);
+    stepNPCs(nextTick);
+    // After movement, small chance killer acts
+    killerAttempt(nextTick);
+  }
+
+  function randomRoam(){
+    // Convenience button to advance time
+    if(phase !== "explore") return;
+    const neighbors = ADJ[playerRoom] || [];
+    if(neighbors.length){ movePlayer(randItem(neighbors)); }
+  }
+
+  function callMeeting(reason){
+    if(phase !== "explore") return;
+    setMeetingReason(reason || (foundBodies[0] ? `Body reported: ${foundBodies[0].victimId}` : "Emergency Meeting"));
+    setPhase("meeting");
+    // seed accusations with heuristics
+    seedAccusations();
+  }
+
+  function seedAccusations(){
+    const roomOfLatest = foundBodies[0]?.room;
+    const base = [];
+    aliveCast.forEach(npc => {
+      if(npc.id === "You") return;
+      let against = null;
+      let weight = Math.random()*0.5 + (npc.boldness*0.5);
+      let reason = "has a hunch";
+      if(roomOfLatest && npc.lastSeen && ADJ[npc.lastSeen.room]?.includes(roomOfLatest)){
+        // was near the scene recently
+        reason = `was near ${roomOfLatest}`;
+        // bias: accuse someone also near the scene recently
+        const near = cast.filter(p => p.alive && p.lastSeen && ADJ[p.lastSeen.room]?.includes(roomOfLatest) && p.id !== npc.id);
+        if(near.length) against = randItem(near).id;
+        weight += 0.4;
+      }
+      if(!against){
+        const others = cast.filter(p => p.alive && p.id !== npc.id);
+        if(others.length) against = randItem(others).id;
+      }
+      base.push({ from: npc.id, against, weight, reason: `${npc.name} ${reason}.` });
+    });
+    setAccusations(prev => [...base, ...prev].slice(0, 120));
+  }
+
+  // --- Initialize player into cast as id "You" ---
+  useEffect(() => {
+    // Only on first mount: inject player
+    setCast(prev => {
+      if(prev.find(p => p.id === "You")) return prev; // already injected
+      const player = makeNPC("You", "Student");
+      player.trust = 1; // always trust self
+      player.honesty = 1;
+      player.location = playerRoom;
+      return [player, ...prev];
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep player location synced on cast updates
+  useEffect(() => {
+    setCast(prev => prev.map(p => p.id === "You" ? { ...p, location: playerRoom, alliedWithPlayer: false } : p));
+  }, [playerRoom]);
+
+  // --- Alliance requests ---
+  function tryAlly(npcId){
+    if(phase !== "explore") return;
+    if(allies.length >= 2) { pushLog("You already have two allies."); return; }
+    const npc = cast.find(p => p.id === npcId);
+    if(!npc || !npc.alive) return;
+    if(npc.location !== playerRoom){ pushLog(`${npc.name} is not in the same room.`); return; }
+
+    const acceptChance = npc.trust * 0.9 + (npc.role !== "Student" ? -0.15 : 0);
+    const accepted = Math.random() < acceptChance;
+    if(accepted){
+      setAllies(prev => [...prev, npcId]);
+      setCast(prev => prev.map(p => p.id === npcId ? { ...p, alliedWithPlayer: true } : p));
+      pushLog(`${npc.name} joined your alliance.`);
+    } else {
+      pushLog(`${npc.name} refused to ally right now.`);
+    }
+  }
+
+  // --- Meeting: voting logic ---
+  function resolveVote(){
+    if(phase !== "meeting") return;
+    // NPC voting based on accusations & suspicion
+    const tallies = new Map();
+
+    const aliveIds = cast.filter(p => p.alive).map(p => p.id);
+
+    function addVote(targetId, weight){
+      if(!aliveIds.includes(targetId)) return;
+      tallies.set(targetId, (tallies.get(targetId)||0) + weight);
+    }
+
+    // Seed with recorded accusations
+    accusations.forEach(a => {
+      if(!aliveIDs.has(a.from) || !aliveIDs.has(a.against)) return;
+      addVote(a.against, a.weight);
+    });
+
+    // NPCs cast a vote
+    aliveCast.forEach(npc => {
+      if(npc.id === "You") return;
+      // Slight chance to skip
+      if(Math.random() < 0.08) return;
+
+      // If killer, try to steer away from self
+      if(npc.isKiller){
+        // pick top non-self suspicion
+        const candidates = aliveCast.filter(p => p.id !== npc.id);
+        const choice = randItem(candidates);
+        addVote(choice.id, 0.9 + Math.random()*0.8);
+        return;
+      }
+
+      // Normal voter: use last accusations to bias
+      const myAccs = accusations.filter(a => a.from === npc.id);
+      if(myAccs.length){
+        const strongest = myAccs.reduce((m,c) => c.weight>m.weight?c:m, myAccs[0]);
+        addVote(strongest.against, 1 + npc.boldness*0.5);
+      } else {
+        const others = aliveCast.filter(p => p.id !== npc.id);
+        addVote(randItem(others).id, 0.6);
+      }
+    });
+
+    // Player vote
+    if(selectedVote){ addVote(selectedVote, 1.25); }
+
+    // Find highest tally
+    let eliminatedId = null; let best = 0;
+    tallies.forEach((score, id) => { if(score > best){ best = score; eliminatedId = id; } });
+
+    if(!eliminatedId){
+      pushLog("No consensus. No one was eliminated.");
+      endMeeting();
+      return;
+    }
+
+    setCast(prev => prev.map(p => p.id === eliminatedId ? { ...p, alive: false } : p));
+    const eliminated = cast.find(p => p.id === eliminatedId);
+    pushLog(`${eliminated?.name || eliminatedId} was voted out.`);
+
+    // Check win/lose
+    const killerStillAlive = (eliminatedId !== killer?.id) && killer?.alive;
+    if(eliminatedId === killer?.id){
+      setOutcome({ result: "win", reason: "You exposed the killer at the meeting." });
+      setPhase("over");
+      return;
+    }
+
+    // if too many deaths, lose
+    const aliveCount = cast.filter(p => p.alive && p.id !== "You").length - 1; // exclude player and just eliminated (already updated next tick)
+    const deadCount = cast.filter(p => !p.alive && p.id !== "You").length;
+    if(deadCount >= 6 && killerStillAlive){
+      setOutcome({ result: "lose", reason: "Too many innocents died." });
+      setPhase("over");
+      return;
+    }
+
+    endMeeting();
+  }
+
+  function endMeeting(){
+    setPhase("explore");
+    setAccusations([]);
+    setSelectedVote(null);
+    setMeetingReason("");
+  }
+
+  // --- Player can be killed if alone with killer during explore ---
+  useEffect(() => {
+    if(phase !== "explore") return;
+    const killerObj = cast.find(p => p.isKiller && p.alive);
+    if(!killerObj) return;
+    const sameRoom = killerObj.location === playerRoom;
+    if(!sameRoom) return;
+    // Danger only if you have <2 allies present
+    const alliesHere = cast.filter(p => allies.includes(p.id) && p.location === playerRoom && p.alive).length;
+    const chance = Math.max(0.03, 0.5 - 0.2*alliesHere);
+    if(Math.random() < chance){
+      setOutcome({ result: "lose", reason: `You were killed in ${playerRoom}.` });
+      setPhase("over");
+      pushLog("You were killed by the murderer.");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick, phase, cast, playerRoom]);
+
+  // --- UI helpers ---
+  const npcsHere = cast.filter(p => p.alive && p.location === playerRoom && p.id !== "You");
+  const bodiesHere = foundBodies.filter(b => b.room === playerRoom);
+
+  function resetGame(){
+    const fresh = initializeCast();
+    // re-inject player
+    const player = makeNPC("You", "Student");
+    player.trust = 1; player.honesty = 1; player.location = randItem(ROOMS);
+    setCast([player, ...fresh]);
+    setPlayerRoom(player.location);
+    setTick(0);
+    setPhase("explore");
+    setAllies([]);
+    setAccusations([]);
+    setFoundBodies([]);
+    setLog(["A new day at Westpine. Something feels off..."]);
+    setOutcome(null);
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 text-slate-800 p-4">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-4">
+        {/* LEFT: Map & Movement */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between bg-white/80 backdrop-blur p-3 rounded-2xl shadow border border-slate-200">
+            <div className="flex gap-2 items-center">
+              <h1 className="text-xl font-bold">Westpine Murder Mystery</h1>
+              <Pill>Tick {tick}</Pill>
+              <Pill>{phase === "explore" ? "Explore" : phase === "meeting" ? "Meeting" : "Game Over"}</Pill>
+            </div>
+            <div className="flex gap-2">
+              {phase === "explore" && (
+                <>
+                  <button onClick={() => callMeeting(bodiesHere.length?`Body found in ${playerRoom}`:"Emergency Meeting")} className="px-3 py-1.5 rounded-xl bg-rose-600 text-white hover:bg-rose-700">Call Meeting</button>
+                  <button onClick={randomRoam} className="px-3 py-1.5 rounded-xl bg-slate-800 text-white hover:bg-black">Pass / Roam</button>
+                </>
+              )}
+              {phase === "over" && (
+                <button onClick={resetGame} className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">Play Again</button>
+              )}
+            </div>
+          </div>
+
+          {/* Map */}
+          <Section title={`Map — You are in ${playerRoom}`}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {ROOMS.map(r => (
+                <button key={r}
+                  disabled={phase!=="explore" || !ADJ[playerRoom]?.includes(r)}
+                  onClick={() => movePlayer(r)}
+                  className={
+                    `text-left p-3 rounded-xl border ${playerRoom===r?"border-indigo-500 bg-indigo-50":"border-slate-200 bg-white"} disabled:opacity-50 hover:border-indigo-300`}
+                >
+                  <div className="font-semibold">{r}</div>
+                  <div className="mt-1 text-xs text-slate-600">{(ADJ[playerRoom]||[]).includes(r) ? "Adjacent" : "Far"}</div>
+                </button>
+              ))}
+            </div>
+          </Section>
+
+          {/* Room happenings */}
+          <Section title="People in the room">
+            {npcsHere.length === 0 && <div className="text-sm text-slate-500">No one here right now.</div>}
+            <div className="grid sm:grid-cols-2 gap-2">
+              {npcsHere.map(npc => (
+                <div key={npc.id} className="p-3 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{npc.name}</div>
+                    <div className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs ${labelForRole(npc.role)}`}>{npc.role}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => tryAlly(npc.id)} className="px-2 py-1 rounded-lg bg-slate-800 text-white text-sm">Ally</button>
+                    <button onClick={() => { setAccusations(a=>[{from:"You", against:npc.id, weight:1, reason:`You suspect ${npc.name}.`}, ...a]); pushLog(`You made a mental note: ${npc.name} seems sus.`); }} className="px-2 py-1 rounded-lg bg-amber-500 text-white text-sm">Mark Sus</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {bodiesHere.length>0 && (
+              <div className="mt-3 p-3 rounded-xl border border-rose-200 bg-rose-50">
+                <div className="font-semibold text-rose-800">Bodies here:</div>
+                <ul className="list-disc pl-6 text-rose-900 text-sm">
+                  {bodiesHere.map((b,i)=>(<li key={i}>{b.victimId} at tick {b.tick}</li>))}
+                </ul>
+              </div>
+            )}
+          </Section>
+
+          {/* Log */}
+          <Section title="Event Log">
+            <ul className="space-y-1 text-sm max-h-64 overflow-auto pr-2">
+              {log.map((l,i)=>(<li key={i} className="text-slate-700">• {l}</li>))}
+            </ul>
+          </Section>
+        </div>
+
+        {/* RIGHT: Roster / Meeting */}
+        <div className="space-y-4">
+          <Section title="Allies">
+            {allies.length===0 && <div className="text-sm text-slate-500">No allies yet. Ask someone in your room.</div>}
+            <div className="flex flex-wrap gap-2">
+              {allies.map(id => {
+                const p = cast.find(x => x.id===id);
+                return <span key={id} className="px-2 py-1 rounded-lg bg-emerald-600 text-white text-sm">{p?.name || id}</span>;
+              })}
+            </div>
+            <div className="mt-2 text-xs text-slate-500">Allies follow you more often and deter killings.</div>
+          </Section>
+
+          <Section title="Roster (Alive)">
+            <div className="max-h-64 overflow-auto pr-2 space-y-1">
+              {aliveCast.sort((a,b)=>a.name.localeCompare(b.name)).map(p => (
+                <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                  <div className="flex flex-col">
+                    <span className="font-medium">{p.name}{p.id==="You"?" (You)":""}</span>
+                    <div className="flex gap-2 items-center mt-1">
+                      <RoomBadge room={p.location}/>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${labelForRole(p.role)}`}>{p.role}</span>
+                    </div>
+                  </div>
+                  {p.id!=="You" && phase==="explore" && (
+                    <button onClick={() => setAccusations(a=>[{from:"You", against:p.id, weight:0.7, reason:`You feel uneasy about ${p.name}.`}, ...a])} className="text-xs px-2 py-1 rounded-lg bg-amber-500 text-white">Note Sus</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {phase === "meeting" && (
+            <Section title={`Meeting — ${meetingReason}`}>
+              <div className="text-sm text-slate-600 mb-2">Discuss and vote out a suspect.</div>
+              <div className="space-y-2 max-h-40 overflow-auto pr-2">
+                {accusations.slice(0,25).map((a,i)=>(
+                  <div key={i} className="text-sm bg-slate-50 border border-slate-200 rounded-lg p-2">
+                    <span className="font-semibold">{a.from}</span> accuses <span className="font-semibold">{a.against}</span> — <span className="text-xs text-slate-500">{a.reason}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2">
+                <label className="block text-sm font-medium mb-1">Your vote</label>
+                <select value={selectedVote||""} onChange={e=>setSelectedVote(e.target.value)} className="w-full rounded-lg border border-slate-300 p-2">
+                  <option value="">(Skip)</option>
+                  {aliveCast.filter(p=>p.id!=="You").map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <button onClick={resolveVote} className="mt-2 w-full px-3 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">Submit Vote</button>
+                <button onClick={endMeeting} className="mt-2 w-full px-3 py-2 rounded-xl bg-slate-200 text-slate-800 hover:bg-slate-300">Skip / No Elim</button>
+              </div>
+            </Section>
+          )}
+
+          {phase !== "meeting" && (
+            <Section title="Tips">
+              <ul className="list-disc pl-6 text-sm text-slate-700">
+                {START_TIPS.map((t,i)=>(<li key={i}>{t}</li>))}
+              </ul>
+            </Section>
+          )}
+
+          {phase === "over" && outcome && (
+            <Section title={outcome.result === "win" ? "You Win!" : "You Died / Lost"}>
+              <div className="text-sm mb-2">{outcome.reason}</div>
+              <div className="text-sm">Killer was: <span className="font-semibold">{killer?.name}</span></div>
+            </Section>
+          )}
+        </div>
+      </div>
+
+      <footer className="max-w-6xl mx-auto mt-6 text-center text-xs text-slate-500">
+        Prototype build • Randomized each round • Made for Westpine setting
+      </footer>
+    </div>
+  );
+}
