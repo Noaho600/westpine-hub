@@ -19,17 +19,16 @@
 
 <header>
   <h1>🗣️ Peer Counseling Simulator</h1>
-  <p>Help your classmates with their problems!</p>
+  <p>Help your classmates with their problems! Be careful with your choices.</p>
 </header>
 
 <div id="game">
   <div id="stage">
     <p>Choose a student to talk to:</p>
-    <button class="student-btn" onclick="startConversation('William')">William (7th grade)</button>
-    <button class="student-btn" onclick="startConversation('Gerald')">Gerald (7th grade)</button>
-    <button class="student-btn" onclick="startConversation('Michael')">Michael (6th grade)</button>
+    <button class="student-btn" onclick="startConversation()">Random Student</button>
   </div>
   <div id="feedback"></div>
+  <div id="score" style="margin-top:10px;">Score: 0</div>
 </div>
 
 <footer>
@@ -37,53 +36,71 @@
 </footer>
 
 <script>
-const conversations = {
-  'William': {
-    problem: "I'm feeling stressed about the upcoming math test.",
-    choices: [
-      { text: "Encourage him to study and offer tips.", outcome: "William feels motivated and thanks you!" },
-      { text: "Tell him it's fine, don't worry.", outcome: "William feels a bit confused but relaxes." },
-      { text: "Make a joke about math.", outcome: "William laughs, stress reduced a little!" }
-    ]
-  },
-  'Gerald': {
-    problem: "I feel left out during recess.",
-    choices: [
-      { text: "Invite him to play a game with you.", outcome: "Gerald joins and feels happy!" },
-      { text: "Tell him to join someone else.", outcome: "Gerald is sad but decides to try." },
-      { text: "Ignore the problem.", outcome: "Gerald feels frustrated." }
-    ]
-  },
-  'Michael': {
-    problem: "I don't understand the science homework.",
-    choices: [
-      { text: "Explain it step by step.", outcome: "Michael understands and thanks you!" },
-      { text: "Tell him to ask the teacher.", outcome: "Michael goes to the teacher and gets help." },
-      { text: "Give him the answer directly.", outcome: "Michael finishes quickly but doesn't learn much." }
-    ]
-  }
-};
+let score = 0;
 
-function startConversation(student) {
-  const conv = conversations[student];
-  let html = `<p><strong>${student}:</strong> ${conv.problem}</p>`;
-  conv.choices.forEach((c, i) => {
-    html += `<button class="choice-btn" onclick="choose('${student}', ${i})">${c.text}</button>`;
+const students = ["William", "Gerald", "Michael", "Adrianna", "Sophia", "Kairo", "Noah", "Shawn"];
+const problems = [
+  "I'm stressed about the math test tomorrow.",
+  "I feel left out during recess.",
+  "I don't understand the science homework.",
+  "I lost my lunch money.",
+  "I feel nervous about presenting in class.",
+  "I accidentally broke a school item.",
+  "I feel tired and can't focus in class."
+];
+
+// Responses include good or bad
+const responses = [
+  { text: "Give advice and encouragement.", outcome: "They feel supported and grateful!", good:true },
+  { text: "Tell them not to worry too much.", outcome: "They feel calmer, but unsure.", good:true },
+  { text: "Make a light joke about the situation.", outcome: "They laugh and feel a bit better!", good:true },
+  { text: "Ignore their problem.", outcome: "They feel hurt and upset.", good:false },
+  { text: "Tease them about their problem.", outcome: "They feel embarrassed and angry.", good:false },
+  { text: "Give the wrong advice on purpose.", outcome: "The situation gets worse!", good:false },
+  { text: "Listen quietly and nod.", outcome: "They feel heard and appreciated.", good:true },
+  { text: "Offer to help them directly.", outcome: "They feel relieved and happy!", good:true }
+];
+
+function getRandomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function startConversation() {
+  const student = getRandomItem(students);
+  const problem = getRandomItem(problems);
+
+  // Pick 3 random responses without duplicates
+  let chosenResponses = [];
+  while(chosenResponses.length < 3) {
+    let r = getRandomItem(responses);
+    if(!chosenResponses.includes(r)) chosenResponses.push(r);
+  }
+
+  let html = `<p><strong>${student}:</strong> ${problem}</p>`;
+  chosenResponses.forEach((c, i) => {
+    html += `<button class="choice-btn" onclick="choose('${c.outcome}', ${c.good})">${c.text}</button>`;
   });
+
   document.getElementById('stage').innerHTML = html;
   document.getElementById('feedback').innerHTML = '';
 }
 
-function choose(student, choiceIndex) {
-  const outcome = conversations[student].choices[choiceIndex].outcome;
+function choose(outcome, good) {
   document.getElementById('feedback').innerText = outcome;
-  // Optionally, after feedback, return to student selection
+
+  // Update score
+  if(good) {
+    score += 1;
+  } else {
+    score -= 1;
+  }
+  document.getElementById('score').innerText = "Score: " + score;
+
+  // Return to random student selection after 3 seconds
   setTimeout(() => {
     document.getElementById('stage').innerHTML = `
       <p>Choose a student to talk to:</p>
-      <button class="student-btn" onclick="startConversation('William')">William (7th grade)</button>
-      <button class="student-btn" onclick="startConversation('Gerald')">Gerald (7th grade)</button>
-      <button class="student-btn" onclick="startConversation('Michael')">Michael (6th grade)</button>
+      <button class="student-btn" onclick="startConversation()">Random Student</button>
     `;
     document.getElementById('feedback').innerText = '';
   }, 3000);
