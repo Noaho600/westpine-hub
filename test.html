@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westpine.games</title>
+<style>
+  body { 
+    font-family: "Segoe UI", Roboto, Arial, sans-serif; 
+    background: linear-gradient(135deg, #6cc5d7, #f0f8ff); 
+    margin: 0; 
+    padding: 0; 
+    text-align: center;
+  }
+  header { 
+    background: rgba(255,255,255,0.85); 
+    padding: 30px; 
+    border-bottom: 2px solid #ddd; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  header h1 { margin:0; font-size:36px; color:#222; }
+  header p { margin:10px 0 0; font-size:18px; color:#555; }
+
+  .games-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+    gap: 20px; 
+    max-width: 1000px; 
+    margin: 40px auto; 
+    padding: 0 20px;
+  }
+
+  .game-card { 
+    background: #fff; 
+    padding: 25px; 
+    border-radius: 16px; 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+    transition: all 0.2s ease;
+  }
+  .game-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+  }
+  .game-card h2 { 
+    margin: 0 0 10px; 
+    font-size: 20px; 
+    color:#222; 
+  }
+  .game-card p { 
+    font-size: 15px; 
+    color:#555; 
+    margin-bottom: 15px;
+  }
+  .play-btn { 
+    display:inline-block; 
+    padding:12px 20px; 
+    font-size:15px; 
+    font-weight:600; 
+    border:none; 
+    border-radius:10px; 
+    background:#6cc5d7; 
+    color:#fff; 
+    cursor:pointer; 
+    transition: all 0.2s ease; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .play-btn:hover { 
+    background:#58aebf; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  }
+
+  footer { 
+    margin: 50px 0 20px; 
+    font-size:14px; 
+    color:#333;
+  }
+  footer a { 
+    text-decoration:none; 
+    color:#333; 
+    font-weight:600; 
+    margin: 0 10px;
+  }
+  footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 Westpine.games</h1>
+  <p>Play fun games inspired by Westpine Middle School!</p>
+</header>
+
+<main>
+  <div class="games-grid">
+    <div class="game-card">
+      <h2>🎨 Art Studio</h2>
+      <p>Create your own Westpine masterpiece in the art room!</p>
+      <a href="art-studio.html"><button class="play-btn">Play</button></a>
+    </div>
+
+    <div class="game-card">
+      <h2>🔬 Science Lab</h2>
+      <p>Explore experiments like the water cycle and biology fun.</p>
+      <a href="science-lab.html"><button class="play-btn">Play</button></a>
+    </div>
+
+    <div class="game-card">
+      <h2>🗣️ Peer Counseling Simulator</h2>
+      <p>Help classmates with real problems—choose wisely!</p>
+      <a href="peer-counseling.html"><button class="play-btn">Play</button></a>
+    </div>
+
+    <div class="game-card">
+      <h2>📚 School Adventure</h2>
+      <p>Explore Westpine Middle and uncover hidden stories.</p>
+      <a href="school-adventure.html"><button class="play-btn">Play</button></a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="changelog.html">📜 Changelog</a> | 
+  <a href="feedback.html">💬 Feedback</a>
+</footer>
+
+</body>
+</html>
