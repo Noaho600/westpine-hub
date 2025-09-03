@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🗣️ Peer Counseling Simulator</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f8ff; text-align: center; margin:0; }
+  header { background:#6cc5d7; color:#222; padding:20px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:5px 0 0; font-size:14px; }
+  #game { max-width:600px; margin:30px auto; padding:20px; background:#fff; border-radius:12px; border:2px solid #222; }
+  .student-btn, .choice-btn { display:block; margin:10px auto; padding:10px 20px; font-size:16px; cursor:pointer; border-radius:8px; border:1px solid #222; background:#f2f2f2; }
+  .student-btn:hover, .choice-btn:hover { background:#ddd; }
+  #feedback { margin-top:20px; font-weight:bold; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🗣️ Peer Counseling Simulator</h1>
+  <p>Help your classmates with their problems!</p>
+</header>
+
+<div id="game">
+  <div id="stage">
+    <p>Choose a student to talk to:</p>
+    <button class="student-btn" onclick="startConversation('William')">William (7th grade)</button>
+    <button class="student-btn" onclick="startConversation('Gerald')">Gerald (7th grade)</button>
+    <button class="student-btn" onclick="startConversation('Michael')">Michael (6th grade)</button>
+  </div>
+  <div id="feedback"></div>
+</div>
+
+<footer>
+  <a href="index.html">⬅ Back to Westpine.games</a>
+</footer>
+
+<script>
+const conversations = {
+  'William': {
+    problem: "I'm feeling stressed about the upcoming math test.",
+    choices: [
+      { text: "Encourage him to study and offer tips.", outcome: "William feels motivated and thanks you!" },
+      { text: "Tell him it's fine, don't worry.", outcome: "William feels a bit confused but relaxes." },
+      { text: "Make a joke about math.", outcome: "William laughs, stress reduced a little!" }
+    ]
+  },
+  'Gerald': {
+    problem: "I feel left out during recess.",
+    choices: [
+      { text: "Invite him to play a game with you.", outcome: "Gerald joins and feels happy!" },
+      { text: "Tell him to join someone else.", outcome: "Gerald is sad but decides to try." },
+      { text: "Ignore the problem.", outcome: "Gerald feels frustrated." }
+    ]
+  },
+  'Michael': {
+    problem: "I don't understand the science homework.",
+    choices: [
+      { text: "Explain it step by step.", outcome: "Michael understands and thanks you!" },
+      { text: "Tell him to ask the teacher.", outcome: "Michael goes to the teacher and gets help." },
+      { text: "Give him the answer directly.", outcome: "Michael finishes quickly but doesn't learn much." }
+    ]
+  }
+};
+
+function startConversation(student) {
+  const conv = conversations[student];
+  let html = `<p><strong>${student}:</strong> ${conv.problem}</p>`;
+  conv.choices.forEach((c, i) => {
+    html += `<button class="choice-btn" onclick="choose('${student}', ${i})">${c.text}</button>`;
+  });
+  document.getElementById('stage').innerHTML = html;
+  document.getElementById('feedback').innerHTML = '';
+}
+
+function choose(student, choiceIndex) {
+  const outcome = conversations[student].choices[choiceIndex].outcome;
+  document.getElementById('feedback').innerText = outcome;
+  // Optionally, after feedback, return to student selection
+  setTimeout(() => {
+    document.getElementById('stage').innerHTML = `
+      <p>Choose a student to talk to:</p>
+      <button class="student-btn" onclick="startConversation('William')">William (7th grade)</button>
+      <button class="student-btn" onclick="startConversation('Gerald')">Gerald (7th grade)</button>
+      <button class="student-btn" onclick="startConversation('Michael')">Michael (6th grade)</button>
+    `;
+    document.getElementById('feedback').innerText = '';
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
